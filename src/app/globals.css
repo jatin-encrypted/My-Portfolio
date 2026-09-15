@@ -1,0 +1,178 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-geist-sans);
+
+  --color-ring: var(--accent);
+  --color-input: var(--border);
+  --color-border: var(--border);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-card-foreground: var(--foreground);
+  --color-card: var(--surface);
+
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+  --radius-full: 9999px;
+
+  --animate-highlight: highlight 0.6s ease forwards;
+  --animate-flash: flash 0.6s ease forwards;
+}
+
+/* CommitsGrid Animations */
+@keyframes highlight {
+  0% {
+    background-color: transparent;
+  }
+  100% {
+    background-color: var(--highlight);
+  }
+}
+
+@keyframes flash {
+  0% {
+    background-color: var(--card);
+  }
+  50% {
+    background-color: var(--highlight);
+  }
+  100% {
+    background-color: var(--card);
+  }
+}
+
+.animate-highlight {
+  animation: highlight 0.6s ease forwards;
+}
+
+.animate-flash {
+  animation: flash 0.6s ease forwards;
+}
+
+:root {
+  /* Custom Easing Tokens */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --duration-fast: 150ms;
+  --duration-normal: 200ms;
+  --duration-slow: 300ms;
+  --duration-scroll: 600ms;
+
+  /* Color Palette - Light Mode */
+  --background: #fafafa;
+  --foreground: #0a0a0a;
+  --muted: #f4f4f5;
+  --muted-foreground: #71717a;
+  --accent: #2563eb;
+  --accent-foreground: #ffffff;
+  --border: #e4e4e7;
+  --surface: #ffffff;
+
+  --card: var(--surface);
+  --card-foreground: var(--foreground);
+  --popover: var(--surface);
+  --popover-foreground: var(--foreground);
+  --primary: var(--foreground);
+  --primary-foreground: var(--background);
+  --secondary: var(--muted);
+  --secondary-foreground: var(--foreground);
+  --destructive: #ef4444;
+  --input: var(--border);
+  --ring: var(--accent);
+}
+
+.dark {
+  /* Color Palette - Dark Mode */
+  --background: #0a0a0a;
+  --foreground: #fafafa;
+  --muted: #141416;
+  --muted-foreground: #a1a1aa;
+  --accent: #3b82f6;
+  --accent-foreground: #ffffff;
+  --border: #27272a;
+  --surface: #1c1c1e;
+
+  --card: var(--surface);
+  --card-foreground: var(--foreground);
+  --popover: var(--surface);
+  --popover-foreground: var(--foreground);
+  --primary: var(--foreground);
+  --primary-foreground: var(--background);
+  --secondary: var(--muted);
+  --secondary-foreground: var(--foreground);
+  --destructive: #f87171;
+  --input: var(--border);
+  --ring: var(--accent);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased selection:bg-accent/20 selection:text-accent;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+  html {
+    @apply font-sans;
+  }
+}
+
+/* Subtle dot-grid texture for visual depth */
+.bg-grid-pattern {
+  background-size: 28px 28px;
+  background-image: radial-gradient(circle, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+}
+
+.dark .bg-grid-pattern {
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+}
+
+/* Tactile press response */
+.press-feedback {
+  transition: transform var(--duration-fast) var(--ease-out);
+}
+.press-feedback:active {
+  transform: scale(0.97);
+}
+
+/* Visible focus styling */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Touch device protection: disable persistent hover transforms on tap */
+@media (hover: none) {
+  *:hover {
+    transform: none !important;
+  }
+}
+
+/* Accessibility: strict reduced-motion guarantee */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
