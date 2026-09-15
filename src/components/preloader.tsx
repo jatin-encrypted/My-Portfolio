@@ -1,109 +1,123 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 
-const WORDS = [
-  "Jatin Kukreja",
-  "Developer",
-  "AI · Web3 · Systems",
-];
+function subscribe() {
+  return () => {};
+}
+
+function getSnapshot() {
+  try {
+    return Boolean(
+      sessionStorage.getItem("jk_portfolio_preloader_seen") ||
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    );
+  } catch {
+    return false;
+  }
+}
+
+function getServerSnapshot() {
+  return false;
+}
 
 export function Preloader() {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isVisible, setIsVisible] = useState(false);
-  const [hasCheckedStorage, setHasCheckedStorage] = useState(false);
+  const hasSeen = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const [isExiting, setIsExiting] = useState(false);
+  const [isDone, setIsDone] = useState(false);
 
   useEffect(() => {
-    let wordInterval: NodeJS.Timeout;
-    let finishTimeout: NodeJS.Timeout;
+    if (hasSeen) return;
 
-    const initTimeout = setTimeout(() => {
-      // Honor reduced motion immediately
-      const prefersReducedMotion = window.matchMedia(
-        "(prefers-reduced-motion: reduce)"
-      ).matches;
+    // Lock background scroll during preloader
+    document.body.style.overflow = "hidden";
 
-      // Check session storage
-      const hasSeen = sessionStorage.getItem("jk_portfolio_preloader_seen");
+    // 0.85s: Start hardware-accelerated curtain lift
+    const exitTimer = setTimeout(() => {
+      setIsExiting(true);
+      sessionStorage.setItem("jk_portfolio_preloader_seen", "true");
+    }, 850);
 
-      if (hasSeen || prefersReducedMotion) {
-        setHasCheckedStorage(true);
-        return;
-      }
-
-      setIsVisible(true);
-      setHasCheckedStorage(true);
-
-      // Rapid cycle: ~320ms per word, total duration ~960ms
-      wordInterval = setInterval(() => {
-        setCurrentIndex((prev) => {
-          if (prev < WORDS.length - 1) {
-            return prev + 1;
-          }
-          clearInterval(wordInterval);
-          return prev;
-        });
-      }, 320);
-
-      finishTimeout = setTimeout(() => {
-        setIsVisible(false);
-        sessionStorage.setItem("jk_portfolio_preloader_seen", "true");
-      }, 1050);
-    }, 0);
+    // 1.25s: Cleanly unmount and restore scrolling
+    const doneTimer = setTimeout(() => {
+      setIsDone(true);
+      document.body.style.overflow = "";
+    }, 1250);
 
     return () => {
-      clearTimeout(initTimeout);
-      if (wordInterval) clearInterval(wordInterval);
-      if (finishTimeout) clearTimeout(finishTimeout);
+      clearTimeout(exitTimer);
+      clearTimeout(doneTimer);
+      document.body.style.overflow = "";
     };
-  }, []);
+  }, [hasSeen]);
 
-  if (!hasCheckedStorage) return null;
+  if (hasSeen || isDone) return null;
 
   return (
-    <AnimatePresence>
-      {isVisible && (
-        <motion.div
-          key="site-preloader"
-          initial={{ opacity: 1 }}
-          exit={{
-            opacity: 0,
-            y: "-100%",
-            transition: {
-              duration: 0.4,
-              ease: [0.23, 1, 0.32, 1],
-            },
-          }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-background text-foreground select-none"
-        >
-          <div className="flex flex-col items-center justify-center space-y-4 px-6 text-center">
-            <span className="font-mono text-xs text-accent uppercase tracking-widest">
-              Initializing
-            </span>
-            <div className="h-12 overflow-hidden flex items-center justify-center">
-              <motion.span
-                key={currentIndex}
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -16 }}
-                transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
-                className="text-2xl md:text-3xl font-bold tracking-tight text-foreground"
-              >
-                {WORDS[currentIndex]}
-              </motion.span>
-            </div>
-            <div className="w-24 h-0.5 bg-muted rounded-full overflow-hidden">
-              <motion.div
-                initial={{ x: "-100%" }}
-                animate={{ x: "0%" }}
-                transition={{ duration: 0.9, ease: [0.23, 1, 0.32, 1] }}
-                className="w-full h-full bg-accent"
-              />
-            </div>
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+    <div
+      role="status"
+      aria-label="Loading portfolio"
+      className={`fixed inset-0 z-[100] flex items-center justify-center bg-background text-foreground select-none transition-all will-change-transform ${
+        isExiting
+          ? "-translate-y-full opacity-0 pointer-events-none"
+          : "translate-y-0 opacity-100"
+      }`}
+      style={{
+        transitionDuration: "400ms",
+        transitionTimingFunction: "cubic-bezier(0.23, 1, 0.32, 1)",
+      }}
+    >
+      <div className="flex flex-col items-center justify-center space-y-5 px-6 text-center">
+        {/* Status indicator */}
+        <div className="flex items-center gap-2">
+          <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="font-mono text-xs text-muted-foreground uppercase tracking-widest">
+            Initializing
+          </span>
+        </div>
+
+        {/* Pure CSS GPU-Accelerated Word Sequence (runs on compositor thread) */}
+        <div className="relative h-14 w-96 max-w-[90vw] flex items-center justify-center overflow-hidden">
+          <span
+            className="absolute font-mono text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-foreground will-change-transform text-center whitespace-nowrap"
+            style={{
+              animation:
+                "preloader-word-1 0.85s cubic-bezier(0.23, 1, 0.32, 1) forwards",
+            }}
+          >
+            Jatin Kukreja<span className="text-accent">.</span>
+          </span>
+          <span
+            className="absolute font-mono text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-foreground will-change-transform text-center whitespace-nowrap"
+            style={{
+              animation:
+                "preloader-word-2 0.85s cubic-bezier(0.23, 1, 0.32, 1) forwards",
+            }}
+          >
+            Developer
+          </span>
+          <span
+            className="absolute font-mono text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-foreground will-change-transform text-center whitespace-nowrap"
+            style={{
+              animation:
+                "preloader-word-3 0.85s cubic-bezier(0.23, 1, 0.32, 1) forwards",
+            }}
+          >
+            AI · Web3 · Systems
+          </span>
+        </div>
+
+        {/* Hardware-Accelerated Progress Line */}
+        <div className="w-36 h-1 bg-muted/60 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-accent rounded-full will-change-transform origin-left"
+            style={{
+              animation:
+                "preloader-progress 0.85s cubic-bezier(0.23, 1, 0.32, 1) forwards",
+            }}
+          />
+        </div>
+      </div>
+    </div>
   );
 }

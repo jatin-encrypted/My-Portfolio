@@ -176,3 +176,61 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Preloader Hardware-Accelerated Animations (GPU Compositor Thread) */
+@keyframes preloader-progress {
+  0% {
+    transform: scaleX(0);
+  }
+  65% {
+    transform: scaleX(0.72);
+  }
+  100% {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes preloader-word-1 {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  12%, 26% {
+    opacity: 1;
+    transform: translateY(0px);
+  }
+  32%, 100% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes preloader-word-2 {
+  0%, 28% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  36%, 58% {
+    opacity: 1;
+    transform: translateY(0px);
+  }
+  64%, 100% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes preloader-word-3 {
+  0%, 62% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  70%, 96% {
+    opacity: 1;
+    transform: translateY(0px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0px);
+  }
+}
