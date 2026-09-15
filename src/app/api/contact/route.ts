@@ -26,20 +26,20 @@ export async function POST(req: NextRequest) {
     }
 
     const { name, email, message } = result.data;
-    const recipientEmail = process.env.CONTACT_TO_EMAIL || "jkukreja407@gmail.com";
+    const recipientEmail = process.env.CONTACT_TO_EMAIL;
     const fromEmail =
       process.env.RESEND_FROM_EMAIL || "Portfolio Contact <onboarding@resend.dev>";
 
-    // Check if email dispatch service is configured
+    // Check if email dispatch service and recipient are configured
     const apiKey = process.env.RESEND_API_KEY;
 
-    if (!apiKey) {
+    if (!apiKey || !recipientEmail) {
       return NextResponse.json(
         {
           success: true,
           delivered: false,
           message:
-            `Form input validated successfully. Automated email dispatch is not configured in this environment. Please reach out directly at ${recipientEmail}.`,
+            "Form input validated successfully. Automated email dispatch is not configured in this environment.",
         },
         { status: 200 }
       );
@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
           success: true,
           delivered: false,
           message:
-            `Your message was validated, but automated delivery failed. Please email me directly at ${recipientEmail}.`,
+            "Your message was validated, but automated delivery failed. Please try again later.",
         },
         { status: 200 }
       );
@@ -107,7 +107,7 @@ export async function POST(req: NextRequest) {
       {
         success: false,
         message:
-          "An unexpected error occurred. Please try again or email directly at jkukreja407@gmail.com.",
+          "An unexpected error occurred. Please try again later.",
       },
       { status: 500 }
     );

@@ -84,7 +84,7 @@ export function Contact() {
         setServerError(data.message || "Failed to submit message. Please try again.");
       }
     } catch {
-      setServerError("Network error. Please email me directly at jkukreja407@gmail.com.");
+      setServerError("Network error. Please try again later.");
     } finally {
       setIsSubmitting(false);
     }
@@ -129,7 +129,7 @@ export function Contact() {
                   {deliveryStatus?.delivered
                     ? "Thank you for reaching out. I will review your note and get back to you promptly."
                     : deliveryStatus?.message ||
-                    "Your message was validated. Note: Automated email dispatch is not configured in this environment. Please reach out directly to jkukreja407@gmail.com."}
+                    "Your message was validated. Note: Automated email dispatch is not configured in this environment."}
                 </p>
                 <button
                   type="button"
