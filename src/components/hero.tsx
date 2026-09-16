@@ -1,19 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import dynamic from "next/dynamic";
 import { motion } from "motion/react";
 import { ArrowRight, User } from "@phosphor-icons/react";
 import { CommitsGrid } from "@/components/ui/commits-grid";
-
-const ThreeScene = dynamic(() => import("./three-scene"), {
-  ssr: false,
-  loading: () => (
-    <div className="w-full h-[380px] sm:h-[450px] md:h-[500px] flex items-center justify-center">
-      <div className="w-32 h-32 rounded-full border border-accent/20 animate-pulse" />
-    </div>
-  ),
-});
+import { AsciiVisual } from "./ascii-visual";
 
 import type { Variants } from "motion/react";
 
@@ -41,17 +31,6 @@ const itemVariants: Variants = {
 };
 
 export function Hero() {
-  const [isDesktop, setIsDesktop] = useState(false);
-
-  useEffect(() => {
-    const checkScreen = () => {
-      setIsDesktop(window.innerWidth >= 640);
-    };
-    checkScreen();
-    window.addEventListener("resize", checkScreen);
-    return () => window.removeEventListener("resize", checkScreen);
-  }, []);
-
   const scrollToSection = (id: string) => {
     const el = document.getElementById(id);
     if (el) {
@@ -121,29 +100,9 @@ export function Hero() {
           </motion.div>
         </motion.div>
 
-        {/* 3D Visual Leaf (~42% visual weight on desktop) */}
-        <div className="lg:col-span-5 relative flex items-center justify-center">
-          {/* Ambient Glow backing */}
-          <div className="absolute inset-0 -z-10 flex items-center justify-center pointer-events-none">
-            <div className="w-64 h-64 sm:w-80 sm:h-80 rounded-full bg-accent/10 blur-3xl" />
-          </div>
-
-          {/* Visual container: ThreeScene on desktop/tablet, lightweight emblem on mobile */}
-          <div className="w-full flex items-center justify-center">
-            {isDesktop ? (
-              <div className="w-full">
-                <ThreeScene />
-              </div>
-            ) : (
-              /* Mobile Fallback: sleek geometric emblem (avoids Three.js WebGL init on mobile) */
-              <div className="w-48 h-48 rounded-full border border-border/60 bg-surface/50 backdrop-blur-md flex items-center justify-center relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-tr from-accent/20 to-transparent" />
-                <span className="font-mono text-xs text-muted-foreground uppercase tracking-widest z-10">
-                  AI · Web3 · Systems
-                </span>
-              </div>
-            )}
-          </div>
+        {/* ASCII Video Visual (~42% visual weight on desktop) */}
+        <div className="lg:col-span-5 relative flex items-center justify-center w-full">
+          <AsciiVisual />
         </div>
       </div>
     </section>
