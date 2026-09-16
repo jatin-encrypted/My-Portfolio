@@ -16,12 +16,6 @@ const pseudoRandom = (seed: number) => {
 };
 
 export const CommitsGrid = ({ text, className }: CommitsGridProps) => {
-  const [mounted, setMounted] = React.useState(false);
-
-  React.useEffect(() => {
-    setMounted(true);
-  }, []);
-
   const cleanString = (str: string): string => {
     const upperStr = str.toUpperCase();
 
@@ -82,30 +76,25 @@ export const CommitsGrid = ({ text, className }: CommitsGridProps) => {
 
   const getCellDelay = (index: number) => {
     const rand = pseudoRandom(index * 7 + 5);
-    return `${(rand * 0.6).toFixed(2)}s`;
+    return `${(rand * 0.5).toFixed(2)}s`;
   };
 
-  const getCellFlash = (index: number) => {
-    return pseudoRandom(index * 11 + 9) < 0.15;
-  };
-
-  // Pre-generate cell data deterministically
+  // Pre-generate cell data deterministically with O(1) Set lookup
   const cellData = React.useMemo(() => {
     const total = gridWidth * gridHeight;
+    const highlightedSet = new Set(highlightedCells);
     const data = [];
     for (let i = 0; i < total; i++) {
-      const isHighlighted = highlightedCells.includes(i);
-      const shouldFlash = !isHighlighted && getCellFlash(i);
+      const isHighlighted = highlightedSet.has(i);
       data.push({
         isHighlighted,
-        shouldFlash,
-        delay: getCellDelay(i),
-        color: getCellColor(i),
+        delay: isHighlighted ? getCellDelay(i) : undefined,
+        color: isHighlighted ? getCellColor(i) : undefined,
       });
     }
     return data;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gridWidth, gridHeight, text]);
+  }, [gridWidth, gridHeight, text, highlightedCells]);
 
   return (
     <div className="w-full max-w-full overflow-x-auto no-scrollbar py-1">
@@ -122,24 +111,23 @@ export const CommitsGrid = ({ text, className }: CommitsGridProps) => {
       >
         {cellData.map((cell, index) => {
           const isHighlighted = cell.isHighlighted;
-          const shouldFlash = mounted && cell.shouldFlash;
 
           return (
             <div
               key={index}
               className={cn(
-                "border h-full w-full aspect-square rounded-[1.5px] sm:rounded-[2.5px] transition-all duration-150 hover:scale-125 hover:z-20 cursor-pointer",
+                "border h-full w-full aspect-square rounded-[1.5px] sm:rounded-[2.5px] transition-transform duration-150 hover:scale-125 hover:z-20 cursor-pointer",
                 isHighlighted
-                  ? "border-emerald-500/40 bg-emerald-500/10 shadow-[0_0_6px_rgba(57,211,83,0.2)] animate-highlight"
-                  : "border-border/30 sm:border-border/40",
-                shouldFlash ? "animate-flash" : "",
-                !isHighlighted && !shouldFlash ? "bg-card/40" : ""
+                  ? "border-emerald-500/40 shadow-[0_0_6px_rgba(57,211,83,0.25)] animate-highlight"
+                  : "border-border/30 sm:border-border/40 bg-card/40"
               )}
               style={
-                {
-                  animationDelay: cell.delay,
-                  "--highlight": cell.color,
-                } as CSSProperties
+                isHighlighted
+                  ? ({
+                      animationDelay: cell.delay,
+                      backgroundColor: cell.color,
+                    } as CSSProperties)
+                  : undefined
               }
             />
           );

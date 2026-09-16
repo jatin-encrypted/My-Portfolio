@@ -30,38 +30,24 @@
   --radius-2xl: 1rem;
   --radius-full: 9999px;
 
-  --animate-highlight: highlight 0.6s ease forwards;
-  --animate-flash: flash 0.6s ease forwards;
+  --animate-highlight: highlight 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
 }
 
-/* CommitsGrid Animations */
+/* CommitsGrid Animations - 100% GPU Composited (transform & opacity only) */
 @keyframes highlight {
   0% {
-    background-color: transparent;
+    opacity: 0.15;
+    transform: scale(0.85);
   }
   100% {
-    background-color: var(--highlight);
-  }
-}
-
-@keyframes flash {
-  0% {
-    background-color: var(--card);
-  }
-  50% {
-    background-color: var(--highlight);
-  }
-  100% {
-    background-color: var(--card);
+    opacity: 1;
+    transform: scale(1);
   }
 }
 
 .animate-highlight {
-  animation: highlight 0.6s ease forwards;
-}
-
-.animate-flash {
-  animation: flash 0.6s ease forwards;
+  animation: highlight 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+  will-change: transform, opacity;
 }
 
 :root {
@@ -103,7 +89,7 @@
   --foreground: #fafafa;
   --muted: #141416;
   --muted-foreground: #a1a1aa;
-  --accent: #3b82f6;
+  --accent: #2563eb;
   --accent-foreground: #ffffff;
   --border: #27272a;
   --surface: #1c1c1e;
