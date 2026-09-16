@@ -4,7 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { SectionWrapper } from "./section-wrapper";
 import { SmoothInput, SmoothTextarea } from "@/components/ui/skiper-ui/skiper106";
-import { contactSchema, ContactFormData } from "@/lib/validators";
+import type { ContactFormData } from "@/lib/validators";
 import {
   PaperPlaneRight,
   CheckCircle,
@@ -12,6 +12,35 @@ import {
   EnvelopeSimple,
   SpinnerGap,
 } from "@phosphor-icons/react";
+
+function validateClientForm(data: ContactFormData): Record<string, string> {
+  const errors: Record<string, string> = {};
+  const name = data.name?.trim() || "";
+  if (name.length < 2) {
+    errors.name = "Name must be at least 2 characters";
+  } else if (name.length > 100) {
+    errors.name = "Name cannot exceed 100 characters";
+  }
+
+  const email = data.email?.trim() || "";
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!email || !emailRegex.test(email)) {
+    errors.email = "Please provide a valid email address";
+  }
+
+  const message = data.message?.trim() || "";
+  if (message.length < 10) {
+    errors.message = "Message must be at least 10 characters";
+  } else if (message.length > 2000) {
+    errors.message = "Message cannot exceed 2000 characters";
+  }
+
+  if (data.honeypot && data.honeypot.length > 0) {
+    errors.honeypot = "Bot detected";
+  }
+
+  return errors;
+}
 
 export function Contact() {
   const [formData, setFormData] = useState<ContactFormData>({
@@ -49,16 +78,10 @@ export function Contact() {
     setErrors({});
     setServerError(null);
 
-    // Client-side Zod validation
-    const validation = contactSchema.safeParse(formData);
-    if (!validation.success) {
-      const fieldErrors: Record<string, string> = {};
-      validation.error.issues.forEach((issue) => {
-        if (issue.path[0]) {
-          fieldErrors[issue.path[0].toString()] = issue.message;
-        }
-      });
-      setErrors(fieldErrors);
+    // Client-side validation
+    const clientErrors = validateClientForm(formData);
+    if (Object.keys(clientErrors).length > 0) {
+      setErrors(clientErrors);
       return;
     }
 
